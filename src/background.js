@@ -2,9 +2,11 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_TIMER,
   PHASES,
+  dailyGoal,
   dayKey,
   emptyDay,
   getState,
+  goalProgress,
   phaseMinutes,
   scheduleReview,
   withLock,
@@ -113,6 +115,7 @@ async function finishPhase(timer, { skipped = false } = {}) {
       const day = history[key] ?? emptyDay();
       day.focusMin += Math.round(timer.durationMs / 60000);
       day.pomodoros += 1;
+      checkDailyGoal(day, settings);
       await chrome.storage.local.set({ history: { ...history, [key]: day } });
     }
     nextPhase = !skipped && completedFocus % settings.longBreakEvery === 0 ? 'longBreak' : 'shortBreak';
@@ -141,6 +144,27 @@ function notifyPhaseEnd(ended, next, completedFocus, autoStarted) {
     iconUrl: chrome.runtime.getURL('icons/icon128.png'),
     title,
     message,
+    priority: 2,
+  });
+}
+
+// ---------- daily goal ----------
+
+// Mutates `day`: snapshots today's goal and stamps goalMetAt the first time it's reached.
+function checkDailyGoal(day, settings, { notify = true } = {}) {
+  day.goal ??= dailyGoal(settings);
+  if (day.goalMetAt || !goalProgress(day, day.goal).met) return;
+  day.goalMetAt = Date.now();
+  if (!notify || !settings.notifications) return;
+
+  const parts = [];
+  if (day.goal.problems > 0) parts.push(`${day.goal.problems} problem${day.goal.problems === 1 ? '' : 's'}`);
+  if (day.goal.pomodoros > 0) parts.push(`${day.goal.pomodoros} pomodoro${day.goal.pomodoros === 1 ? '' : 's'}`);
+  chrome.notifications.create(`daily-goal-${dayKey()}`, {
+    type: 'basic',
+    iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+    title: 'Daily goal reached 🎯',
+    message: `${parts.join(' and ')} done today. Great consistency!`,
     priority: 2,
   });
 }
@@ -174,7 +198,7 @@ async function problemSolved({ meta, result }) {
   const slug = meta?.titleSlug;
   if (!SLUG_RE.test(slug ?? '')) throw new Error('Invalid problem slug');
 
-  const { problems, pending, history, timer } = await getState();
+  const { problems, pending, history, timer, settings } = await getState();
   const now = Date.now();
   const existing = problems[slug];
   const submissionId = String(result?.submissionId ?? now);
@@ -214,6 +238,7 @@ async function problemSolved({ meta, result }) {
   const key = dayKey(now);
   const day = history[key] ?? emptyDay();
   if (!day.solvedSlugs.includes(slug)) day.solvedSlugs.push(slug);
+  checkDailyGoal(day, settings);
 
   delete pending[slug];
   await chrome.storage.local.set({
@@ -257,8 +282,10 @@ const clampInt = (value, min, max, fallback) => {
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 };
 
-async function updateSettings({ settings: input }) {
-  const { settings: current } = await getState();
+async function updateSettings({ settings: partial }) {
+  const { settings: current, history } = await getState();
+  // Merge so a caller that omits a field (e.g. a dashboard tab from an older version) keeps its current value.
+  const input = { ...current, ...partial };
   const settings = {
     focusMin: clampInt(input.focusMin, 1, 180, DEFAULT_SETTINGS.focusMin),
     shortBreakMin: clampInt(input.shortBreakMin, 1, 60, DEFAULT_SETTINGS.shortBreakMin),
@@ -267,10 +294,21 @@ async function updateSettings({ settings: input }) {
     autoStartBreaks: Boolean(input.autoStartBreaks),
     autoStartFocus: Boolean(input.autoStartFocus),
     notifications: Boolean(input.notifications),
-    // A dashboard tab opened before this setting existed won't send it; keep the current value instead of turning it off.
-    showFloatingTimer: Boolean(input.showFloatingTimer ?? current.showFloatingTimer),
+    showFloatingTimer: Boolean(input.showFloatingTimer),
+    goalProblems: clampInt(input.goalProblems, 0, 20, DEFAULT_SETTINGS.goalProblems),
+    goalPomodoros: clampInt(input.goalPomodoros, 0, 16, DEFAULT_SETTINGS.goalPomodoros),
   };
-  await chrome.storage.local.set({ settings });
+
+  // Apply a changed goal to today unless today's goal was already reached; earlier days keep their snapshot.
+  const key = dayKey();
+  const today = history[key];
+  if (today && !today.goalMetAt) {
+    today.goal = dailyGoal(settings);
+    checkDailyGoal(today, settings, { notify: false });
+    await chrome.storage.local.set({ settings, history });
+  } else {
+    await chrome.storage.local.set({ settings });
+  }
   return settings;
 }
 
@@ -310,6 +348,8 @@ async function importData({ data }) {
       focusMin: Math.max(current.focusMin, Number(day.focusMin) || 0),
       pomodoros: Math.max(current.pomodoros, Number(day.pomodoros) || 0),
       solvedSlugs: [...new Set([...current.solvedSlugs, ...(Array.isArray(day.solvedSlugs) ? day.solvedSlugs : [])])],
+      ...((current.goal ?? day.goal) && { goal: current.goal ?? day.goal }),
+      ...((current.goalMetAt ?? day.goalMetAt) && { goalMetAt: current.goalMetAt ?? day.goalMetAt }),
     };
   }
 

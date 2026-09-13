@@ -137,6 +137,44 @@ main {
   gap: 16px;
 }
 
+.panel-grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* ---------- daily goal ---------- */
+
+.goal-panel[data-met="true"] {
+  border-color: color-mix(in srgb, var(--break) 45%, var(--border));
+  background: color-mix(in srgb, var(--break) 6%, var(--surface));
+}
+
+.goal-status {
+  margin: -6px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.goal-panel[data-met="true"] .goal-status {
+  color: var(--break);
+}
+
+.goal-summary {
+  font-size: 13px;
+}
+
+.edit-link {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.edit-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .panel {
   display: grid;
   align-content: start;
@@ -170,20 +208,6 @@ main {
   text-align: right;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
-}
-
-.meter {
-  height: 8px;
-  overflow: hidden;
-  border-radius: 99px;
-  background: var(--surface-2);
-}
-
-.meter span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: currentColor;
 }
 
 .bars {
@@ -245,6 +269,23 @@ main {
 .cell.l2 { background: var(--heat-2); }
 .cell.l3 { background: var(--heat-3); }
 .cell.l4 { background: var(--heat-4); }
+
+.cell.goal {
+  position: relative;
+}
+
+.cell.goal::after {
+  content: "";
+  position: absolute;
+  inset: 4.5px;
+  border-radius: 50%;
+  background: var(--break);
+  box-shadow: 0 0 0 1.5px var(--surface);
+}
+
+.legend-gap {
+  width: 12px;
+}
 
 .cell.today {
   outline: 1.5px solid var(--text);
@@ -474,6 +515,25 @@ main {
   text-align: right;
 }
 
+.settings-form h3 {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.settings-form h3:first-child {
+  margin-top: 0;
+}
+
+.settings-form .hint {
+  margin: -4px 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .settings-form .check {
   justify-content: flex-start;
 }
@@ -529,7 +589,8 @@ hr {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .panel-grid {
+  .panel-grid,
+  .panel-grid.three {
     grid-template-columns: 1fr;
   }
 

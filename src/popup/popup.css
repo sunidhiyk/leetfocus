@@ -178,9 +178,49 @@ body {
 
 /* ---------- today ---------- */
 
+.goal-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.goal-card[data-met="true"] {
+  border-color: color-mix(in srgb, var(--break) 45%, var(--border));
+  background: color-mix(in srgb, var(--break) 7%, var(--surface));
+}
+
+.goal-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.goal-status {
+  flex: 1;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.goal-card[data-met="true"] .goal-status {
+  color: var(--break);
+  font-weight: 650;
+}
+
+.goal-head .link-btn {
+  margin: -4px -6px -4px 0;
+  font-size: 12px;
+}
+
 .today {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   padding: 10px 2px;
 }
 
@@ -190,7 +230,7 @@ body {
   gap: 1px;
 }
 
-.stat + .stat {
+.stat:not([hidden]) ~ .stat:not([hidden]) {
   border-left: 1px solid var(--border);
 }
 

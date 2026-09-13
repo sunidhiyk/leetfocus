@@ -1,15 +1,21 @@
 import {
   DAY_MS,
   REVIEW_INTERVALS_DAYS,
+  computeGoalStreaks,
   computeStreaks,
   dayKey,
   escapeHtml,
   formatDuration,
   getState,
+  goalForDay,
+  goalProgress,
+  goalRemainingText,
+  goalRowsHtml,
   isDue,
   problemUrl,
   relativeTime,
   solvedOn,
+  todayGoalProgress,
 } from '../lib/storage.js';
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
@@ -43,6 +49,7 @@ async function refresh() {
   state = await getState();
   const problems = Object.values(state.problems);
   renderOverview(problems);
+  renderGoal();
   renderHeatmap();
   renderTopics(problems);
   renderReview(problems);
@@ -87,6 +94,36 @@ function renderOverview(problems) {
   }).join('');
 }
 
+const goalMetOn = (day) => day != null && goalProgress(day, goalForDay(day, state.settings)).met;
+
+function renderGoal() {
+  const { history, settings } = state;
+  const today = history[dayKey()];
+  const progress = todayGoalProgress(today, settings);
+  const panel = $('#goal-panel');
+  panel.dataset.met = String(progress.met);
+
+  if (!progress.enabled) {
+    $('#goal-status').textContent = 'No daily goal';
+    $('#goal-today').innerHTML = '';
+    $('#goal-summary').textContent = 'Set a target for problems or pomodoros in Settings to build a daily habit.';
+    return;
+  }
+
+  $('#goal-status').textContent = goalRemainingText(progress);
+  $('#goal-today').innerHTML = goalRowsHtml(progress);
+
+  const { current, longest } = computeGoalStreaks(history, settings);
+  const cursor = new Date();
+  let metLast30 = 0;
+  for (let i = 0; i < 30; i += 1) {
+    if (goalMetOn(history[dayKey(cursor.getTime())])) metLast30 += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  const days = (n) => `${n} day${n === 1 ? '' : 's'}`;
+  $('#goal-summary').textContent = `Goal streak: ${days(current)} (best ${longest}) · Met on ${days(metLast30)} of the last 30`;
+}
+
 function renderHeatmap() {
   const today = new Date();
   today.setHours(12, 0, 0, 0);
@@ -108,8 +145,9 @@ function renderHeatmap() {
     }
     const level = solved === 0 ? 0 : solved === 1 ? 1 : solved === 2 ? 2 : solved <= 4 ? 3 : 4;
     const date = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-    const label = `${date}: ${solved} solved, ${pomodoros} pomodoro${pomodoros === 1 ? '' : 's'}`;
-    cells.push(`<span class="cell l${level}${key === todayKey ? ' today' : ''}" title="${label}"></span>`);
+    const metGoal = goalMetOn(day);
+    const label = `${date}: ${solved} solved, ${pomodoros} pomodoro${pomodoros === 1 ? '' : 's'}${metGoal ? ' · daily goal met' : ''}`;
+    cells.push(`<span class="cell l${level}${metGoal ? ' goal' : ''}${key === todayKey ? ' today' : ''}" title="${label}"></span>`);
   }
   $('#heatmap').innerHTML = cells.join('');
   $('#activity-summary').textContent = `${totalSolves} solve${totalSolves === 1 ? '' : 's'} across ${activeDays} active day${activeDays === 1 ? '' : 's'} in the last 6 months`;
@@ -324,10 +362,12 @@ settingsForm.addEventListener('change', async () => {
       autoStartFocus: f.autoStartFocus.checked,
       notifications: f.notifications.checked,
       showFloatingTimer: f.showFloatingTimer.checked,
+      goalProblems: f.goalProblems.value,
+      goalPomodoros: f.goalPomodoros.value,
     },
   });
   renderSettings();
-  toast('Settings saved. New durations apply to the next session.');
+  toast('Settings saved');
 });
 settingsForm.addEventListener('submit', (event) => event.preventDefault());
 
@@ -396,7 +436,7 @@ $('#clear-data').addEventListener('click', async () => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
-  if (Object.keys(changes).some((key) => ['problems', 'history'].includes(key))) refresh();
+  if (Object.keys(changes).some((key) => ['problems', 'history', 'settings'].includes(key))) refresh();
 });
 
 await refresh();

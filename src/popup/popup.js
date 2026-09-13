@@ -1,15 +1,19 @@
 import {
   PHASES,
+  computeGoalStreaks,
   computeStreaks,
   dayKey,
   escapeHtml,
   formatClock,
   getState,
+  goalRemainingText,
+  goalRowsHtml,
   isDue,
   phaseMinutes,
   problemUrl,
   relativeTime,
   solvedOn,
+  todayGoalProgress,
 } from '../lib/storage.js';
 
 const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
@@ -29,6 +33,13 @@ const els = {
   statPomodoros: $('stat-pomodoros'),
   statFocus: $('stat-focus'),
   statStreak: $('stat-streak'),
+  goalCard: $('goal-card'),
+  goalStatus: $('goal-status'),
+  goalRows: $('goal-rows'),
+  statSolvedWrap: $('stat-solved-wrap'),
+  statPomodorosWrap: $('stat-pomodoros-wrap'),
+  statGoalStreakWrap: $('stat-goal-streak-wrap'),
+  statGoalStreak: $('stat-goal-streak'),
   reviewBanner: $('review-banner'),
   reviewCount: $('review-count'),
   recent: $('recent'),
@@ -93,12 +104,22 @@ function renderTimer() {
 }
 
 function renderStats() {
-  const { problems, history } = state;
+  const { problems, history, settings } = state;
   const today = history[dayKey()];
   els.statSolved.textContent = solvedOn(today);
   els.statPomodoros.textContent = today?.pomodoros ?? 0;
   els.statFocus.textContent = `${today?.focusMin ?? 0}m`;
   els.statStreak.textContent = computeStreaks(history).current;
+
+  const progress = todayGoalProgress(today, settings);
+  els.goalCard.hidden = !progress.enabled;
+  els.goalCard.dataset.met = String(progress.met);
+  els.goalStatus.textContent = goalRemainingText(progress);
+  els.goalRows.innerHTML = goalRowsHtml(progress);
+  els.statSolvedWrap.hidden = progress.enabled;
+  els.statPomodorosWrap.hidden = progress.enabled;
+  els.statGoalStreakWrap.hidden = !progress.enabled;
+  els.statGoalStreak.textContent = computeGoalStreaks(history, settings).current;
 
   const list = Object.values(problems);
   const due = list.filter((p) => isDue(p)).length;
@@ -159,6 +180,7 @@ for (const tab of els.tabs) {
 
 $('open-dashboard').addEventListener('click', () => openDashboard());
 els.reviewBanner.addEventListener('click', () => openDashboard('#review'));
+$('edit-goal').addEventListener('click', () => openDashboard('#settings'));
 
 chrome.storage.onChanged.addListener((_changes, area) => {
   if (area === 'local') refresh();

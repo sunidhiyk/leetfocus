@@ -44,11 +44,22 @@
         </div>
       </section>
 
+      <section id="goal-card" class="card goal-card" aria-labelledby="goal-title" hidden>
+        <div class="goal-head">
+          <h2 id="goal-title">Today's goal</h2>
+          <span id="goal-status" class="goal-status"></span>
+          <button id="edit-goal" class="link-btn" type="button">Edit</button>
+        </div>
+        <div id="goal-rows" class="goal-rows"></div>
+      </section>
+
       <section class="card today" aria-label="Today">
-        <div class="stat"><strong id="stat-solved">0</strong><span>Solved today</span></div>
-        <div class="stat"><strong id="stat-pomodoros">0</strong><span>Pomodoros</span></div>
-        <div class="stat"><strong id="stat-focus">0m</strong><span>Focused</span></div>
-        <div class="stat"><strong id="stat-streak">0</strong><span>Day streak</span></div>
+        <!-- Solved/pomodoro counts are hidden while a daily goal is set, since the goal card already shows them. -->
+        <div class="stat" id="stat-solved-wrap"><strong id="stat-solved">0</strong><span>Solved today</span></div>
+        <div class="stat" id="stat-pomodoros-wrap"><strong id="stat-pomodoros">0</strong><span>Pomodoros</span></div>
+        <div class="stat"><strong id="stat-focus">0m</strong><span>Focused today</span></div>
+        <div class="stat"><strong id="stat-streak">0</strong><span>Solve streak</span></div>
+        <div class="stat" id="stat-goal-streak-wrap" hidden><strong id="stat-goal-streak">0</strong><span>Goal streak</span></div>
       </section>
 
       <button id="review-banner" class="review-banner" type="button" hidden>

@@ -5,6 +5,7 @@ A Chrome extension that **automatically saves your LeetCode progress** and keeps
 - **Auto-logging.** When a submission is *Accepted*, LeetFocus saves the problem number, title, difficulty, topics, language, runtime/memory percentiles, how long you spent on it, and how many wrong attempts came first.
 - **Pomodoro timer.** Focus, short-break, and long-break cycles with a live countdown on the toolbar badge, desktop notifications, and optional auto-start.
 - **Floating timer on problem pages.** A small draggable timer sits on top of LeetCode with start/pause/skip and "time on this problem". It can shrink to a progress ring, remembers where you put it, follows LeetCode's light/dark theme, and can be turned off in Settings.
+- **Daily goal.** Set a target for problems and/or pomodoros per day (default 3 + 4). You get progress bars in the popup and dashboard, a one-time "goal reached" notification, a goal streak, and goal days marked on the heatmap. Each day remembers the goal it had, so changing your goal doesn't rewrite past streaks.
 - **Spaced-repetition reviews.** Solved problems come back after 1, 3, 7, 14, 30 and 60 days. Re-solving a due problem counts as a review.
 - **Dashboard.** Stats, current and longest streak, a 6-month activity heatmap, difficulty and topic breakdowns, a searchable problem log with notes, and CSV/JSON export and import.
 - **Private by design.** Everything lives in `chrome.storage.local`. No accounts, servers, or analytics.
@@ -59,7 +60,6 @@ src/lib/                shared storage helpers + theme
 
 ## Ideas for next versions
 
-- Daily goal (e.g. 3 problems or 4 pomodoros) with progress ring
 - Sync across devices via `chrome.storage.sync` (watch the size quota) or a GitHub gist
 - Push accepted solutions (code) to a GitHub repo
 - leetcode.cn support

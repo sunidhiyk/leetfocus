@@ -172,6 +172,64 @@ a {
 .diff-dot[data-difficulty="Medium"] { background: var(--medium); }
 .diff-dot[data-difficulty="Hard"] { background: var(--hard); }
 
+.meter {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--surface-2);
+}
+
+.meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  transition: width 0.4s ease;
+}
+
+.goal-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.goal-row {
+  display: grid;
+  grid-template-columns: 76px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.goal-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.goal-row .meter > span {
+  background: var(--focus);
+}
+
+.goal-row[data-done="true"] .meter > span {
+  background: var(--break);
+}
+
+.goal-count {
+  min-width: 42px;
+  font-weight: 650;
+  text-align: right;
+}
+
+.goal-row[data-done="true"] .goal-count {
+  color: var(--break);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter > span {
+    transition: none;
+  }
+}
+
 .empty {
   margin: 0;
   color: var(--muted);

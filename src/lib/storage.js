@@ -4,7 +4,8 @@
 //   settings  -> DEFAULT_SETTINGS shape
 //   timer     -> DEFAULT_TIMER shape
 //   problems  -> { [slug]: Problem }
-//   history   -> { [YYYY-MM-DD]: { focusMin, pomodoros, solvedSlugs[] } }
+//   history   -> { [YYYY-MM-DD]: { focusMin, pomodoros, solvedSlugs[], goal?, goalMetAt? } }
+//                (goal is a snapshot of that day's daily goal, so changing it later doesn't rewrite the past)
 //   pending   -> { [slug]: { openedAt, failedAttempts } }  (problems currently being worked on)
 
 export const DEFAULT_SETTINGS = {
@@ -16,6 +17,8 @@ export const DEFAULT_SETTINGS = {
   autoStartFocus: false,
   notifications: true,
   showFloatingTimer: true,
+  goalProblems: 3, // 0 turns this part of the daily goal off
+  goalPomodoros: 4,
 };
 
 export const DEFAULT_TIMER = {
@@ -67,8 +70,8 @@ export const emptyDay = () => ({ focusMin: 0, pomodoros: 0, solvedSlugs: [] });
 
 export const solvedOn = (day) => day?.solvedSlugs?.length ?? 0;
 
-export function computeStreaks(history) {
-  const active = (key) => solvedOn(history[key]) > 0;
+export function computeStreaks(history, isActive = (day) => solvedOn(day) > 0) {
+  const active = (key) => isActive(history[key]);
 
   // The current streak survives until the end of today, so start from yesterday if nothing is solved yet.
   const cursor = new Date();
@@ -91,6 +94,63 @@ export function computeStreaks(history) {
   }
   return { current, longest: Math.max(longest, current) };
 }
+
+// ---------- daily goal ----------
+
+export const dailyGoal = (settings) => ({ problems: settings.goalProblems, pomodoros: settings.goalPomodoros });
+
+export const goalEnabled = (goal) => goal.problems > 0 || goal.pomodoros > 0;
+
+// Days recorded before the goal feature have no snapshot, so fall back to the current goal.
+export const goalForDay = (day, settings) => day?.goal ?? dailyGoal(settings);
+
+export function goalProgress(day, goal) {
+  const solved = solvedOn(day);
+  const pomodoros = day?.pomodoros ?? 0;
+  const parts = [];
+  if (goal.problems > 0) parts.push({ key: 'problems', label: 'Problems', done: solved, target: goal.problems });
+  if (goal.pomodoros > 0) parts.push({ key: 'pomodoros', label: 'Pomodoros', done: pomodoros, target: goal.pomodoros });
+  const met = parts.length > 0 && parts.every((p) => p.done >= p.target);
+  return { parts, met, enabled: parts.length > 0 };
+}
+
+// Today's card: turning the goal off hides it immediately, even if today already has a snapshot.
+export function todayGoalProgress(day, settings) {
+  const current = dailyGoal(settings);
+  return goalProgress(day, goalEnabled(current) ? goalForDay(day, settings) : current);
+}
+
+export const computeGoalStreaks = (history, settings) =>
+  computeStreaks(history, (day) => day != null && goalProgress(day, goalForDay(day, settings)).met);
+
+export function goalRemainingText(progress) {
+  if (!progress.enabled) return '';
+  if (progress.met) return 'Goal complete 🎉';
+  const left = progress.parts
+    .filter((p) => p.done < p.target)
+    .map((p) => {
+      const n = p.target - p.done;
+      return `${n} ${p.key === 'problems' ? `problem${n === 1 ? '' : 's'}` : `pomodoro${n === 1 ? '' : 's'}`}`;
+    });
+  return `${left.join(' + ')} to go`;
+}
+
+export function goalRowsHtml(progress) {
+  return progress.parts
+    .map((p) => {
+      const done = p.done >= p.target;
+      const pct = Math.min(100, (p.done / p.target) * 100);
+      return `
+        <div class="goal-row" data-done="${done}">
+          <span class="goal-label">${p.label}</span>
+          <span class="meter" role="progressbar" aria-label="${p.label}" aria-valuemin="0" aria-valuemax="${p.target}" aria-valuenow="${Math.min(p.done, p.target)}"><span style="width:${pct.toFixed(1)}%"></span></span>
+          <span class="goal-count tabular">${done ? '✓ ' : ''}${p.done}/${p.target}</span>
+        </div>`;
+    })
+    .join('');
+}
+
+// ---------- reviews ----------
 
 export function scheduleReview(stage, now = Date.now()) {
   const clamped = Math.min(Math.max(stage, 0), REVIEW_INTERVALS_DAYS.length - 1);
