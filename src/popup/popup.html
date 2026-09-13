@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LeetFocus</title>
+    <link rel="stylesheet" href="../lib/theme.css" />
+    <link rel="stylesheet" href="popup.css" />
+    <script type="module" src="popup.js"></script>
+  </head>
+  <body>
+    <main class="popup">
+      <header class="top">
+        <div class="brand">
+          <img src="../../icons/icon32.png" width="20" height="20" alt="" />
+          <span>LeetFocus</span>
+        </div>
+        <button id="open-dashboard" class="link-btn" type="button">Dashboard →</button>
+      </header>
+
+      <section id="timer-card" class="card timer-card" data-phase="focus" data-state="idle" aria-label="Pomodoro timer">
+        <div class="phase-tabs" role="tablist" aria-label="Timer phase">
+          <button type="button" role="tab" data-phase="focus">Focus</button>
+          <button type="button" role="tab" data-phase="shortBreak">Short break</button>
+          <button type="button" role="tab" data-phase="longBreak">Long break</button>
+        </div>
+
+        <div class="ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="track" cx="60" cy="60" r="52" />
+            <circle id="ring-progress" class="progress" cx="60" cy="60" r="52" />
+          </svg>
+          <div class="ring-label">
+            <div id="time" role="timer" aria-live="off">25:00</div>
+            <div id="phase-label">Ready · Focus</div>
+          </div>
+        </div>
+
+        <div id="cycle" class="cycle" role="img"></div>
+
+        <div class="controls">
+          <button id="primary" class="btn btn-primary" type="button">Start</button>
+          <button id="skip" class="btn" type="button" title="End this phase and move to the next">Skip</button>
+          <button id="reset" class="btn" type="button" title="Stop the timer and reset the cycle">Reset</button>
+        </div>
+      </section>
+
+      <section class="card today" aria-label="Today">
+        <div class="stat"><strong id="stat-solved">0</strong><span>Solved today</span></div>
+        <div class="stat"><strong id="stat-pomodoros">0</strong><span>Pomodoros</span></div>
+        <div class="stat"><strong id="stat-focus">0m</strong><span>Focused</span></div>
+        <div class="stat"><strong id="stat-streak">0</strong><span>Day streak</span></div>
+      </section>
+
+      <button id="review-banner" class="review-banner" type="button" hidden>
+        <span aria-hidden="true">↻</span>
+        <span id="review-count">0 problems due for review</span>
+        <span class="chev" aria-hidden="true">→</span>
+      </button>
+
+      <section class="recent">
+        <h2>Recent solves</h2>
+        <ul id="recent"></ul>
+        <p id="recent-empty" class="empty">
+          Submit a solution on leetcode.com and it will show up here once it's accepted.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

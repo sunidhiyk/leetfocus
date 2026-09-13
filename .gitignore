@@ -1,0 +1,13 @@
+# Packaged builds for the Chrome Web Store
+*.zip
+*.crx
+*.pem
+
+# Python
+__pycache__/
+
+# Local tooling
+.claude/
+.vscode/
+.DS_Store
+Thumbs.db

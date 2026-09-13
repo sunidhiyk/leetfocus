@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "LeetFocus: Pomodoro & Problem Tracker",
+  "short_name": "LeetFocus",
+  "version": "0.1.0",
+  "description": "Automatically log your accepted LeetCode solutions, get spaced-repetition reviews, and stay focused with a built-in Pomodoro timer.",
+  "minimum_chrome_version": "120",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "LeetFocus",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "options_page": "src/dashboard/dashboard.html",
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "alarms", "notifications"],
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/*"],
+      "js": ["src/content/intercept.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://leetcode.com/*"],
+      "js": ["src/content/bridge.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://leetcode.com/*"],
+      "js": ["src/content/widget.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

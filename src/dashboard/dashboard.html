@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LeetFocus Dashboard</title>
+    <link rel="icon" href="../../icons/icon32.png" />
+    <link rel="stylesheet" href="../lib/theme.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <script type="module" src="dashboard.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <div class="brand">
+          <img src="../../icons/icon48.png" width="30" height="30" alt="" />
+          <div>
+            <strong>LeetFocus</strong>
+            <span>Your LeetCode progress, saved in your browser</span>
+          </div>
+        </div>
+        <nav aria-label="Sections">
+          <a href="#overview">Overview</a>
+          <a href="#review">Review</a>
+          <a href="#problems">Problems</a>
+          <a href="#settings">Settings</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section id="overview" class="section">
+        <div id="onboarding" class="card callout" hidden>
+          <h2>Start tracking in 3 steps</h2>
+          <ol>
+            <li>Pin LeetFocus from the puzzle-piece menu in your toolbar so the timer is one click away.</li>
+            <li>Open any problem on <a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">leetcode.com</a> and start a focus session.</li>
+            <li>Submit your solution. Once it's accepted, it's saved here automatically.</li>
+          </ol>
+        </div>
+
+        <div class="stat-grid">
+          <article class="card stat-card">
+            <span class="label">Problems solved</span>
+            <strong id="stat-total" class="tabular">0</strong>
+            <span id="stat-total-sub" class="muted"></span>
+          </article>
+          <article class="card stat-card">
+            <span class="label">Current streak</span>
+            <strong id="stat-streak" class="tabular">0</strong>
+            <span id="stat-streak-sub" class="muted"></span>
+          </article>
+          <article class="card stat-card">
+            <span class="label">Pomodoros</span>
+            <strong id="stat-pomodoros" class="tabular">0</strong>
+            <span id="stat-pomodoros-sub" class="muted"></span>
+          </article>
+          <article class="card stat-card">
+            <span class="label">Due for review</span>
+            <strong id="stat-due" class="tabular">0</strong>
+            <span id="stat-due-sub" class="muted"></span>
+          </article>
+        </div>
+
+        <div class="panel-grid">
+          <article class="card panel">
+            <h2>By difficulty</h2>
+            <div id="difficulty" class="difficulty"></div>
+          </article>
+          <article class="card panel">
+            <h2>Top topics</h2>
+            <ol id="topics" class="bars"></ol>
+          </article>
+        </div>
+
+        <article class="card panel">
+          <div class="panel-head">
+            <h2>Activity</h2>
+            <span id="activity-summary" class="muted"></span>
+          </div>
+          <div class="heatmap-scroll">
+            <div id="heatmap" class="heatmap" role="img" aria-label="Problems solved per day over the last 26 weeks"></div>
+          </div>
+          <div class="legend muted" aria-hidden="true">
+            Less
+            <span class="cell l0"></span><span class="cell l1"></span><span class="cell l2"></span><span class="cell l3"></span><span class="cell l4"></span>
+            More
+          </div>
+        </article>
+      </section>
+
+      <section id="review" class="section card panel">
+        <div class="panel-head">
+          <h2>Review queue</h2>
+          <span id="review-summary" class="muted"></span>
+        </div>
+        <ul id="review-list" class="review-list"></ul>
+        <p id="review-empty" class="empty"></p>
+      </section>
+
+      <section id="problems" class="section card panel">
+        <div class="panel-head">
+          <h2>Problems</h2>
+          <span id="problems-count" class="muted"></span>
+        </div>
+        <div class="filters">
+          <input id="filter-q" type="search" placeholder="Search title, number, topic or notes" aria-label="Search problems" />
+          <select id="filter-difficulty" aria-label="Filter by difficulty">
+            <option value="">All difficulties</option>
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+          </select>
+          <select id="filter-tag" aria-label="Filter by topic">
+            <option value="">All topics</option>
+          </select>
+          <select id="filter-sort" aria-label="Sort problems">
+            <option value="recent">Recently solved</option>
+            <option value="number">Problem number</option>
+            <option value="difficulty">Difficulty</option>
+            <option value="solves">Most solves</option>
+            <option value="time">Longest time spent</option>
+          </select>
+        </div>
+        <div class="table-scroll">
+          <table class="problems-table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Title</th>
+                <th scope="col">Difficulty</th>
+                <th scope="col">Topics</th>
+                <th scope="col">Solves</th>
+                <th scope="col">Last solved</th>
+                <th scope="col">Time spent</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="problems-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="settings" class="section panel-grid">
+        <article class="card panel">
+          <h2>Pomodoro settings</h2>
+          <form id="settings-form" class="settings-form">
+            <label>Focus <span><input name="focusMin" type="number" min="1" max="180" /> min</span></label>
+            <label>Short break <span><input name="shortBreakMin" type="number" min="1" max="60" /> min</span></label>
+            <label>Long break <span><input name="longBreakMin" type="number" min="1" max="90" /> min</span></label>
+            <label>Long break after <span><input name="longBreakEvery" type="number" min="2" max="12" /> pomodoros</span></label>
+            <label class="check"><input name="autoStartBreaks" type="checkbox" /> Start breaks automatically</label>
+            <label class="check"><input name="autoStartFocus" type="checkbox" /> Start focus sessions automatically after breaks</label>
+            <label class="check"><input name="notifications" type="checkbox" /> Show a notification when a phase ends</label>
+            <label class="check"><input name="showFloatingTimer" type="checkbox" /> Show the floating timer on LeetCode problem pages</label>
+          </form>
+        </article>
+
+        <article class="card panel">
+          <h2>Your data</h2>
+          <p class="muted">
+            Everything is stored locally in this browser. Nothing is sent anywhere. Export a backup regularly, or to move to another computer.
+          </p>
+          <div class="data-actions">
+            <button id="export-json" class="btn" type="button">Export backup (JSON)</button>
+            <button id="export-csv" class="btn" type="button">Export spreadsheet (CSV)</button>
+            <label class="btn" for="import-file">Import backup</label>
+            <input id="import-file" type="file" accept="application/json,.json" hidden />
+          </div>
+          <hr />
+          <button id="clear-data" class="btn btn-danger" type="button">Delete all progress…</button>
+        </article>
+      </section>
+
+      <footer class="footer muted">LeetFocus is an independent project and is not affiliated with LeetCode.</footer>
+    </main>
+
+    <div id="toast" class="toast" role="status" hidden></div>
+  </body>
+</html>

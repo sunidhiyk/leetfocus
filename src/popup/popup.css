@@ -1,0 +1,276 @@
+body {
+  width: 340px;
+}
+
+.popup {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.link-btn {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* ---------- timer ---------- */
+
+.timer-card {
+  --phase: var(--focus);
+  --phase-soft: var(--focus-soft);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 12px 14px 14px;
+}
+
+.timer-card[data-phase="break"] {
+  --phase: var(--break);
+  --phase-soft: var(--break-soft);
+}
+
+.phase-tabs {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-2);
+}
+
+.phase-tabs button {
+  flex: 1;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.phase-tabs button[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+}
+
+.phase-tabs button:disabled {
+  cursor: default;
+}
+
+.phase-tabs button:disabled:not([aria-selected="true"]) {
+  opacity: 0.5;
+}
+
+.ring {
+  position: relative;
+  width: 176px;
+  height: 176px;
+}
+
+.ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring circle {
+  fill: none;
+  stroke-width: 8;
+}
+
+.ring .track {
+  stroke: var(--phase-soft);
+}
+
+.ring .progress {
+  stroke: var(--phase);
+  stroke-linecap: round;
+  stroke-dasharray: 326.73;
+  stroke-dashoffset: 326.73;
+  transition: stroke-dashoffset 0.25s linear, stroke 0.2s;
+}
+
+.ring-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+#time {
+  font-family: var(--mono);
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+#phase-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.timer-card[data-state="paused"] #time {
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.4; }
+}
+
+.cycle {
+  display: flex;
+  gap: 6px;
+}
+
+.cycle .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--phase-soft);
+}
+
+.cycle .dot.filled {
+  background: var(--phase);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+  width: 100%;
+}
+
+.timer-card .btn-primary {
+  background: var(--phase);
+  border-color: var(--phase);
+}
+
+/* ---------- today ---------- */
+
+.today {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 10px 2px;
+}
+
+.stat {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+}
+
+.stat + .stat {
+  border-left: 1px solid var(--border);
+}
+
+.stat strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.review-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, var(--medium) 35%, var(--border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--medium) 10%, var(--surface));
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.review-banner #review-count {
+  flex: 1;
+}
+
+.review-banner:hover {
+  background: color-mix(in srgb, var(--medium) 16%, var(--surface));
+}
+
+/* ---------- recent ---------- */
+
+.recent h2 {
+  margin: 0 0 4px;
+  padding: 0 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.recent ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.recent a:hover {
+  background: var(--surface-2);
+}
+
+.recent .title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent .when {
+  flex: none;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.recent .empty {
+  padding: 2px 8px;
+}
