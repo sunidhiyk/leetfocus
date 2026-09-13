@@ -96,6 +96,17 @@
     }
     .w.pulse { animation: pulse 1.1s ease-out 3; }
 
+    .w.notice {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 10px 10px 14px; cursor: default; line-height: 1.35;
+    }
+    .notice-sub { color: var(--muted); font-size: 12px; }
+    .refresh {
+      padding: 7px 12px; border-radius: 8px;
+      background: var(--accent); color: #fff; font-weight: 650; white-space: nowrap;
+    }
+    .refresh:hover { filter: brightness(1.08); }
+
     @media (prefers-reduced-motion: reduce) {
       .w.pulse { animation: none; }
       .fill, .icon { transition: none; }
@@ -131,7 +142,9 @@
   let pending = {};
   let prefs = DEFAULT_PREFS;
   let host = null;
+  let root = null;
   let els = null;
+  let disconnected = false;
   let tickId = null;
   let drag = null;
   let lastPrimaryIcon = null;
@@ -173,7 +186,7 @@
     host = document.createElement('div');
     host.setAttribute('data-leetfocus', 'widget');
     Object.assign(host.style, { position: 'fixed', zIndex: '2147483646', right: '24px', bottom: '24px' });
-    const root = host.attachShadow({ mode: 'closed' });
+    root = host.attachShadow({ mode: 'closed' });
     root.innerHTML = `<style>${CSS}</style>${MARKUP}`;
     els = {
       w: root.querySelector('.w'),
@@ -200,15 +213,32 @@
     clearInterval(tickId);
     host?.remove();
     host = null;
+    root = null;
     els = null;
     lastPrimaryIcon = null;
   }
 
+  // Reloading or updating the extension disconnects content scripts in tabs that are already open.
+  // Rather than silently vanishing, the widget turns into a notice asking for a page refresh.
   function teardown() {
-    unmount();
+    if (disconnected) return;
+    disconnected = true;
     clearInterval(navId);
+    clearInterval(tickId);
     themeObserver.disconnect();
     window.removeEventListener('resize', onResize);
+    if (!host || !root || !onProblemPage()) return unmount();
+
+    const theme = els?.w.dataset.theme ?? (pageIsDark() ? 'dark' : 'light');
+    root.innerHTML = `
+      <style>${CSS}</style>
+      <div class="w notice" data-theme="${theme}" data-phase="focus" role="alert">
+        <span>LeetFocus was updated.<br /><span class="notice-sub">Refresh to bring the timer back.</span></span>
+        <button class="refresh" type="button">Refresh page</button>
+      </div>`;
+    root.querySelector('.refresh').addEventListener('click', () => location.reload());
+    els = null;
+    if (!host.isConnected) document.documentElement.appendChild(host);
   }
 
   function sync() {
